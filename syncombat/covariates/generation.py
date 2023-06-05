@@ -42,11 +42,11 @@ class CovariateGenerator:
         self.n_dx_groups = n_dx_groups
 
         # Prior parameters for covariate distrubutions: age_mu, age_sigma, sex_p, site_p, dx_p
-        age_mu_ab_dict = {'low': (40, 50), 'medium': (40, 60), 'high': (20, 70)}
-        age_sigma_gamma_dict = {'low': (10, 0.5), 'medium': (10, 2), 'high': (10, 0.2)}
-        site_dirichlet_concentration_dict = {'low': 10, 'medium': 5, 'high': 0.7}
-        sex_concentration_dict = {'low': 0.45, 'medium': 0.3, 'high': 0.08}
-        df_concentration_dict = {'low': 0.45, 'medium': 0.3, 'high': 0.08}
+        age_mu_ab_dict = {'low': (40, 50), 'medium': (40, 60), 'high': (0, 100)}
+        age_sigma_gamma_dict = {'low': (10, 0.5), 'medium': (10, 2), 'high': (1, 0.08)}
+        site_dirichlet_concentration_dict = {'low': 100, 'medium': 10, 'high': 0.7}
+        sex_concentration_dict = {'low': 100, 'medium': 10, 'high': 0.7}
+        dx_concentration_dict = {'low': 100, 'medium': 10, 'high': 0.7}
 
         # Set seed
         self.random_state = random_state
@@ -57,13 +57,14 @@ class CovariateGenerator:
             # Age parameters
             self.age_mu = pyro.sample('age_mu', dist.Uniform(*age_mu_ab_dict[age_non_iidness]))
             self.age_sigma = pyro.sample('age_sigma', dist.Gamma(*age_sigma_gamma_dict[age_non_iidness]))
+            print(self.age_mu, self.age_sigma)
 
             # Sex concentration (male/female) parameters
             sex_concentration_prior = dist.Dirichlet(sex_concentration_dict[sex_non_iidness] * torch.ones(2))
             self.sex_p = pyro.sample('sex_p', sex_concentration_prior)  # Only one as they add up 1
 
             # Diagnosis concentration parameters
-            dx_concentration_prior = dist.Dirichlet(df_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups))
+            dx_concentration_prior = dist.Dirichlet(dx_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups))
             self.dx_p = pyro.sample('dx_p', dx_concentration_prior)  # Only one as they add up 1
 
         # Concentration parameter for Dirichlet distribution of site proportions (Dirichlet need to be at least 2D
