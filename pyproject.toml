@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "syncombat"
+version = "0.1.0"
+description = ""
+authors = ["Santiago SILVA <16252054+sssilvar@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyro-ppl = "^1.8.5"
+pandas = "^2.0.2"
+seaborn = "^0.12.2"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
