@@ -1,4 +1,12 @@
 # Travis CI/CD configuration file
+branches:
+  only:
+    - master
+
+pull_request:
+  branches:
+    - master
+
 language: python
 python:
   - "3.9"
