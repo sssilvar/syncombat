@@ -15,7 +15,7 @@ cache:
 
 # command to install dependencies
 install:
-  - make install
+  - poetry install
 
 # command to run tests
 script:
