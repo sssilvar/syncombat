@@ -78,7 +78,7 @@ class PhenotypeModel:
     def load_model(self, path: str):
         """Load model parameters from a directory following the PyTorch convention."""
         # Load model parameters
-        self.model.load_state_dict(torch.load(path))
+        self.model.load_state_dict(torch.load(path), strict=True)
 
     @property
     def dataframe(self) -> pd.DataFrame:

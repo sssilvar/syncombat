@@ -56,7 +56,6 @@ class CovariateGenerator:
             # Age parameters
             self.age_mu = pyro.sample('age_mu', dist.Uniform(*age_mu_ab_dict[age_non_iidness]))
             self.age_sigma = pyro.sample('age_sigma', dist.Gamma(*age_sigma_gamma_dict[age_non_iidness]))
-            print(self.age_mu, self.age_sigma)
 
             # Sex concentration (male/female) parameters
             sex_concentration = sex_concentration_dict[sex_non_iidness] * torch.ones(2)
@@ -130,3 +129,7 @@ class CovariateGenerator:
         df['Site'] = df['Site'].cat.rename_categories(site_levels_dict)
 
         return df
+
+    def save(self, path):
+        """Save the dataframe to a csv file."""
+        self.dataframe.to_csv(path)
