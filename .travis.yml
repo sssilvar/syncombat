@@ -16,18 +16,18 @@ cache:
 
 # command to install dependencies
 install:
-  - poetry install
+  - make install
 
 # Run jobs for CI
 jobs:
     include:
       - stage: "Lint"
         name: "Linting using Ruff"
-        script: poetry run ruff check syncombat tests --line-length 120
+        script: make lint
 
       - stage: "Testing"
         name: "Unit Testing"
-        script: poetry run pytest --cov=syncombat --cov-report=term-missing --mpl-generate-path=baseline tests/
+        script: make test
 #      - stage: "Build"
 #        name: "Build"
 #        script: poetry build
