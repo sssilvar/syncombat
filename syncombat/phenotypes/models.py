@@ -3,7 +3,8 @@
 Phenotypes Models
 =================
 
-This submodule contains a variety of models for phenotype generation as a function of covariates. Among these models are:
+This submodule contains a variety of models for phenotype generation as a function of covariates.
+Among these models there are:
 
 * Linear
 * BSplines

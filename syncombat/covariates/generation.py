@@ -1,5 +1,4 @@
 # A script for generating synthetic age, se, diagnosis, and other covariates for use in synthetic combat.
-import uuid
 from functools import lru_cache
 
 import pyro
@@ -60,12 +59,14 @@ class CovariateGenerator:
             print(self.age_mu, self.age_sigma)
 
             # Sex concentration (male/female) parameters
-            sex_concentration_prior = dist.Dirichlet(sex_concentration_dict[sex_non_iidness] * torch.ones(2))
+            sex_concentration = sex_concentration_dict[sex_non_iidness] * torch.ones(2)
+            sex_concentration_prior = dist.Dirichlet(sex_concentration)
             self.sex_p = pyro.sample('sex_p', sex_concentration_prior)  # Only one as they add up 1
 
             # Diagnosis concentration parameters
-            dx_concentration_prior = dist.Dirichlet(dx_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups))
-            self.dx_p = pyro.sample('dx_p', dx_concentration_prior)  # Only one as they add up 1
+            dx_concentration = dx_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups)
+            dx_proportions_prior = dist.Dirichlet(dx_concentration)
+            self.dx_p = pyro.sample('dx_p', dx_proportions_prior)  # Only one as they add up 1
 
         # Concentration parameter for Dirichlet distribution of site proportions (Dirichlet need to be at least 2D
         site_concentration_param = site_dirichlet_concentration_dict[site_non_iidness] * torch.ones(self.n_sites)
@@ -104,8 +105,14 @@ class CovariateGenerator:
 
     @property
     def dataframe(self):
-        # Get data
-        data_np = {key: val.numpy() for key, val in self.generate_independent_covariates().items() if isinstance(val, torch.Tensor)}
+        # Get data as numpy
+        data_np = {
+            key: val.numpy()
+            for key, val in self.generate_independent_covariates().items()
+            if torch.is_tensor(val)
+        }
+
+        # Define dtypes and create dataframe
         dtype_dict = {'Sex': 'category', 'Age': 'float', 'Site': 'category', 'DX': 'category', 'eTIV': 'float'}
         df = pd.DataFrame(data_np).astype(dtype_dict).reset_index(drop=True)
 

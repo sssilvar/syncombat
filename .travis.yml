@@ -16,13 +16,17 @@ cache:
 
 # command to install dependencies
 install:
-  - make install
+  - poetry install
 
-# command to run tests
-script:
-  - make test
-
-addons:
-  apt:
-    packages:
-    - make
+# Run jobs for CI
+jobs:
+    include:
+      - stage: "Lint"
+        name: "Lint"
+        script: make lint
+      - stage: "Test"
+        name: "Test"
+        script: make test
+#      - stage: "Build"
+#        name: "Build"
+#        script: poetry build
