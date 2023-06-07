@@ -23,10 +23,11 @@ jobs:
     include:
       - stage: "Lint"
         name: "Linting using Ruff"
-        script: make lint
+        script: poetry run ruff check syncombat tests --line-length 120
+
       - stage: "Testing"
         name: "Unit Testing"
-        script: make test
+        script: poetry run pytest --cov=syncombat --cov-report=term-missing --mpl-generate-path=baseline tests/
 #      - stage: "Build"
 #        name: "Build"
 #        script: poetry build
