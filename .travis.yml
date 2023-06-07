@@ -2,7 +2,7 @@
 language: python
 python:
   - "3.9"
-  - "python-nightly"
+#  - "python-nightly"
 
 before_install:
   - curl -sSL https://install.python-poetry.org | python -
@@ -20,3 +20,8 @@ install:
 # command to run tests
 script:
   - make test
+
+addons:
+  apt:
+    packages:
+    - make
