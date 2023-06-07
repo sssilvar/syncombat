@@ -1,6 +1,6 @@
-# Created by https://www.toptal.com/developers/gitignore/api/django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++,cmake
-# Edit at https://www.toptal.com/developers/gitignore?templates=django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++,cmake
-baseline/
+# Created by https://www.toptal.com/developers/gitignore/api/django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++
+# Edit at https://www.toptal.com/developers/gitignore?templates=django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++
+baseline/*
 
 ### C ###
 # Prerequisites
@@ -74,23 +74,6 @@ dkms.conf
 *.lai
 
 # Executables
-
-### CMake ###
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
-Makefile
-cmake_install.cmake
-install_manifest.txt
-compile_commands.json
-CTestTestfile.cmake
-_deps
-
-### CMake Patch ###
-# External projects
-*-prefix/
 
 ### Django ###
 *.log
@@ -891,4 +874,4 @@ rsconnect/
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++,cmake
+# End of https://www.toptal.com/developers/gitignore/api/django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++
