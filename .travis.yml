@@ -22,11 +22,14 @@ install:
 jobs:
     include:
       - stage: "Lint"
-        name: "Lint"
+        name: "Linting using Ruff"
         script: make lint
-      - stage: "Test"
-        name: "Test"
+      - stage: "Testing"
+        name: "Unit Testing"
         script: make test
 #      - stage: "Build"
 #        name: "Build"
 #        script: poetry build
+#      - stage: "Deploy"
+#        name: "Deploy"
+#        script: poetry publish --username $PYPI_USERNAME --password $PYPI_PASSWORD
