@@ -1,16 +1,16 @@
 # Travis CI/CD configuration file
+language: python
+python:
+  - "3.11-dev"
+
 before_install:
   - curl -sSL https://install.python-poetry.org | python -
-    - export PATH="$HOME/.poetry/bin:$PATH"
+  - export PATH="$HOME/.poetry/bin:$PATH"
 
 cache:
   directories:
     - $HOME/.cache/pypoetry
     - $HOME/.cache/pip
-
-language: python
-python:
-  - "3.11"
 
 # command to install dependencies
 install:
