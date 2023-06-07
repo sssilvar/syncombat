@@ -9,9 +9,9 @@ python:
 #  - "python-nightly"
 
 before_install:
+  - export CI_BUILD_CPU_ONLY=1
   - curl -sSL https://install.python-poetry.org | python -
   - export PATH="$HOME/.poetry/bin:$PATH"
-  - export CUDA_VISIBLE_DEVICES=""
   - cd $TRAVIS_BUILD_DIR && echo $TRAVIS_BUILD_DIR
 
 cache:
