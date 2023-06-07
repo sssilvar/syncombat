@@ -2508,16 +2508,6 @@ doc = ["sphinx", "sphinx_rtd_theme"]
 test = ["flake8", "isort", "pytest"]
 
 [[package]]
-name = "toml"
-version = "0.6.0"
-description = "Python Library for Tom's Obvious, Minimal Language"
-optional = false
-python-versions = "*"
-files = [
-    {file = "toml-0.6.0.tar.gz", hash = "sha256:0103cd3598cac83f5c4eb281c1e3381aec214776b8c719a373c7d07f52c18d9b"},
-]
-
-[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -2740,4 +2730,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "6f842343ca7f789191a669226f2eac2a86517d13967760fbc96119a119b27586"
+content-hash = "37f9c60e0f252674cc941602025959ae4b2d3fb16a2c7e7fc410971b1f437c04"

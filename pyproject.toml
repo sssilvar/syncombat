@@ -20,7 +20,6 @@ pytest-mpl = "^0.16.1"
 coverage-badge = "^1.1.0"
 jupyter = "^1.0.0"
 ruff = "^0.0.271"
-toml = "0.6"
 
 [build-system]
 requires = ["poetry-core"]
