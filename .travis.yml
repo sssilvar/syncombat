@@ -1,7 +1,8 @@
 # Travis CI/CD configuration file
 language: python
 python:
-  - "3.11-dev"
+  - "3.9"
+  - "python-nightly"
 
 before_install:
   - curl -sSL https://install.python-poetry.org | python -

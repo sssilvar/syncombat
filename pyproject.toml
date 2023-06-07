@@ -6,7 +6,7 @@ authors = ["Santiago SILVA <16252054+sssilvar@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 pyro-ppl = "^1.8.5"
 pandas = "^2.0.2"
 seaborn = "^0.12.2"
