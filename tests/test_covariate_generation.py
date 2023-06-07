@@ -1,8 +1,9 @@
-import torch
+import pytest
 
 from syncombat.covariates.generation import CovariateGenerator
 
 
+@pytest.mark.mpl_image_compare
 def test_covariate_generation():
     # Initialize CovariateGenerator with test parameters
     n_samples = 5000
@@ -52,8 +53,9 @@ def test_covariate_generation():
     plt.tight_layout()
 
     # Show the plot
-    plt.show()
+    # plt.show()
 
-    sns.lmplot(df, x='Age', y='eTIV', hue='Sex', order=2)
-    plt.suptitle('eTIV vs Age (all sites)')
-    plt.show()
+    # sns.lmplot(df, x='Age', y='eTIV', hue='Sex', order=2)
+    # plt.suptitle('eTIV vs Age (all sites)')
+    # plt.show()
+    return fig

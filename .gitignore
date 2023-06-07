@@ -1,5 +1,6 @@
 # Created by https://www.toptal.com/developers/gitignore/api/django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++,cmake
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,python,pycharm,jupyternotebooks,visualstudiocode,r,macos,latex,c,c++,cmake
+baseline/
 
 ### C ###
 # Prerequisites
@@ -585,7 +586,8 @@ TSWLatexianTemp*
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
