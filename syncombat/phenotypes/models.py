@@ -83,10 +83,12 @@ class PhenotypeModel:
     @property
     def dataframe(self) -> pd.DataFrame:
         """Return a dataframe with the generated phenotypes."""
-        # Create column names
-        col_names = [f"Phenotype_{i}" for i in range(self.out_features)]
+        return pd.DataFrame(self.generate_phenotypes().numpy(), columns=self.pheno_names)
 
-        return pd.DataFrame(self.generate_phenotypes().numpy(), columns=col_names)
+    @property
+    def pheno_names(self) -> list:
+        """Return a list with the names of the generated phenotypes."""
+        return [f"Phenotype_{i}" for i in range(self.out_features)]
 
 
 class LinearPhenotypeModel(PhenotypeModel):

@@ -1,10 +1,12 @@
 # A script for generating synthetic age, se, diagnosis, and other covariates for use in synthetic combat.
 from functools import lru_cache
+from typing import List
 
 import pyro
 import pyro.distributions as dist
 import torch
 import pandas as pd
+import patsy
 
 
 class CovariateGenerator:
@@ -23,7 +25,8 @@ class CovariateGenerator:
                  age_non_iidness: str = 'low',
                  site_non_iidness: str = 'low',
                  diagnosis_non_iidness: str = 'low',
-                 random_state: int = 42
+                 random_state: int = 42,
+                 design_formula: str = "standardize(Age) + C(Sex, Treatment(reference='Female')) + C(DX) - 1",
                  ):
         # Assert iidness level is valid
         assert sex_non_iidness in self.ALLOWED_LEVELS_OF_NON_IIDNESS, \
@@ -39,6 +42,9 @@ class CovariateGenerator:
         self.n_samples = n_samples
         self.n_sites = n_sites
         self.n_dx_groups = n_dx_groups
+
+        # Save formula for design matrix
+        self.design_formula = design_formula
 
         # Prior parameters for covariate distrubutions: age_mu, age_sigma, sex_p, site_p, dx_p
         age_mu_ab_dict = {'low': (40, 50), 'medium': (40, 60), 'high': (0, 100)}
@@ -94,7 +100,7 @@ class CovariateGenerator:
             # eTIV model
             etiv_mu = torch.tensor([1200, 1100])[sex]  # Male and female eTIV mean
             etiv_loc = etiv_mu + 30 * torch.log(age * 365)
-            etiv_sigma = 10 + age * 0.001
+            etiv_sigma = 5 + age * 0.001
             etiv = pyro.sample('eTIV', dist.Normal(etiv_loc, etiv_sigma))
 
             # Create subject_id
@@ -133,3 +139,18 @@ class CovariateGenerator:
     def save(self, path):
         """Save the dataframe to a csv file."""
         self.dataframe.to_csv(path)
+
+    @property
+    def design_matrix(self) -> pd.DataFrame:
+        """Return the design matrix."""
+        return patsy.dmatrix(self.design_formula, self.dataframe, return_type='dataframe')
+
+    @property
+    def tensor_design_matrix(self):
+        """Return the design matrix as a tensor."""
+        return torch.tensor(self.design_matrix.values, dtype=torch.float32)
+
+    @property
+    def design_colnames(self) -> List[str]:
+        """Return the design matrix column names."""
+        return self.design_matrix.columns.tolist()
