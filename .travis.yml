@@ -1,21 +1,41 @@
 # Travis CI/CD configuration file
+branches:
+  only:
+    - main
+
+language: python
+python:
+  - "3.9"
+#  - "python-nightly"
+
 before_install:
+  - export CI_BUILD_CPU_ONLY=1
   - curl -sSL https://install.python-poetry.org | python -
-    - export PATH="$HOME/.poetry/bin:$PATH"
+  - export PATH="$HOME/.poetry/bin:$PATH"
+  - cd $TRAVIS_BUILD_DIR && echo $TRAVIS_BUILD_DIR
 
 cache:
   directories:
     - $HOME/.cache/pypoetry
     - $HOME/.cache/pip
 
-language: python
-python:
-  - "3.11"
-
 # command to install dependencies
 install:
   - make install
 
-# command to run tests
-script:
-  - make test
+# Run jobs for CI
+jobs:
+    include:
+      - stage: "Lint"
+        name: "Linting using Ruff"
+        script: make lint
+
+      - stage: "Testing"
+        name: "Unit Testing"
+        script: make test
+#      - stage: "Build"
+#        name: "Build"
+#        script: poetry build
+#      - stage: "Deploy"
+#        name: "Deploy"
+#        script: poetry publish --username $PYPI_USERNAME --password $PYPI_PASSWORD

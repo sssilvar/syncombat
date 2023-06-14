@@ -1,11 +1,12 @@
 # A script for generating synthetic age, se, diagnosis, and other covariates for use in synthetic combat.
-import uuid
 from functools import lru_cache
+from typing import List
 
 import pyro
 import pyro.distributions as dist
 import torch
 import pandas as pd
+import patsy
 
 
 class CovariateGenerator:
@@ -24,7 +25,8 @@ class CovariateGenerator:
                  age_non_iidness: str = 'low',
                  site_non_iidness: str = 'low',
                  diagnosis_non_iidness: str = 'low',
-                 random_state: int = 42
+                 random_state: int = 42,
+                 design_formula: str = "standardize(Age) + C(Sex, Treatment(reference='Female')) + C(DX) - 1",
                  ):
         # Assert iidness level is valid
         assert sex_non_iidness in self.ALLOWED_LEVELS_OF_NON_IIDNESS, \
@@ -40,6 +42,9 @@ class CovariateGenerator:
         self.n_samples = n_samples
         self.n_sites = n_sites
         self.n_dx_groups = n_dx_groups
+
+        # Save formula for design matrix
+        self.design_formula = design_formula
 
         # Prior parameters for covariate distrubutions: age_mu, age_sigma, sex_p, site_p, dx_p
         age_mu_ab_dict = {'low': (40, 50), 'medium': (40, 60), 'high': (0, 100)}
@@ -57,15 +62,16 @@ class CovariateGenerator:
             # Age parameters
             self.age_mu = pyro.sample('age_mu', dist.Uniform(*age_mu_ab_dict[age_non_iidness]))
             self.age_sigma = pyro.sample('age_sigma', dist.Gamma(*age_sigma_gamma_dict[age_non_iidness]))
-            print(self.age_mu, self.age_sigma)
 
             # Sex concentration (male/female) parameters
-            sex_concentration_prior = dist.Dirichlet(sex_concentration_dict[sex_non_iidness] * torch.ones(2))
+            sex_concentration = sex_concentration_dict[sex_non_iidness] * torch.ones(2)
+            sex_concentration_prior = dist.Dirichlet(sex_concentration)
             self.sex_p = pyro.sample('sex_p', sex_concentration_prior)  # Only one as they add up 1
 
             # Diagnosis concentration parameters
-            dx_concentration_prior = dist.Dirichlet(dx_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups))
-            self.dx_p = pyro.sample('dx_p', dx_concentration_prior)  # Only one as they add up 1
+            dx_concentration = dx_concentration_dict[diagnosis_non_iidness] * torch.ones(self.n_dx_groups)
+            dx_proportions_prior = dist.Dirichlet(dx_concentration)
+            self.dx_p = pyro.sample('dx_p', dx_proportions_prior)  # Only one as they add up 1
 
         # Concentration parameter for Dirichlet distribution of site proportions (Dirichlet need to be at least 2D
         site_concentration_param = site_dirichlet_concentration_dict[site_non_iidness] * torch.ones(self.n_sites)
@@ -76,36 +82,39 @@ class CovariateGenerator:
     def generate_independent_covariates(self):
         """Generate covariates for n_samples and n_sites."""
         with pyro.plate('subject_j', self.n_samples) as subject_idx:
-            site = pyro.sample('site', dist.Categorical(self.site_p))
+            self.site = pyro.sample('site', dist.Categorical(self.site_p))
 
             # Sample age
-            age_mu = self.age_mu[site]  # Mean age at site
-            age_sigma = self.age_sigma[site]  # Std of age at site
+            age_mu = self.age_mu[self.site]  # Mean age at site
+            age_sigma = self.age_sigma[self.site]  # Std of age at site
             age = torch.clip(pyro.sample('age', dist.Normal(age_mu, age_sigma)), 0, 110)
 
             # Sample sex
-            site_sex_p = self.sex_p[site]  # Probability of Male/Female at site
+            site_sex_p = self.sex_p[self.site]  # Probability of Male/Female at site
             sex = pyro.sample('sex', dist.Categorical(site_sex_p))
 
             # Sample diagnosis
-            site_dx_p = self.dx_p[site]  # Probability of each diagnosis at site
+            site_dx_p = self.dx_p[self.site]  # Probability of each diagnosis at site
             dx = pyro.sample('DX', dist.Categorical(site_dx_p))
 
             # eTIV model
             etiv_mu = torch.tensor([1200, 1100])[sex]  # Male and female eTIV mean
             etiv_loc = etiv_mu + 30 * torch.log(age * 365)
-            etiv_sigma = 10 + age * 0.001
+            etiv_sigma = 5 + age * 0.001
             etiv = pyro.sample('eTIV', dist.Normal(etiv_loc, etiv_sigma))
 
-            # Create subject_id
-            subject_id = f'SUB_{subject_idx}_SITE_{site}'
-
-        return {'Age': age, 'Sex': sex, 'eTIV': etiv, 'Site': site, 'DX': dx, 'PTID': subject_id}
+        return {'Age': age, 'Sex': sex, 'eTIV': etiv, 'Site': self.site, 'DX': dx}
 
     @property
     def dataframe(self):
-        # Get data
-        data_np = {key: val.numpy() for key, val in self.generate_independent_covariates().items() if isinstance(val, torch.Tensor)}
+        # Get data as numpy
+        data_np = {
+            key: val.numpy()
+            for key, val in self.generate_independent_covariates().items()
+            if torch.is_tensor(val)
+        }
+
+        # Define dtypes and create dataframe
         dtype_dict = {'Sex': 'category', 'Age': 'float', 'Site': 'category', 'DX': 'category', 'eTIV': 'float'}
         df = pd.DataFrame(data_np).astype(dtype_dict).reset_index(drop=True)
 
@@ -123,3 +132,22 @@ class CovariateGenerator:
         df['Site'] = df['Site'].cat.rename_categories(site_levels_dict)
 
         return df
+
+    def save(self, path):
+        """Save the dataframe to a csv file."""
+        self.dataframe.to_csv(path)
+
+    @property
+    def design_matrix(self) -> pd.DataFrame:
+        """Return the design matrix."""
+        return patsy.dmatrix(self.design_formula, self.dataframe, return_type='dataframe')
+
+    @property
+    def tensor_design_matrix(self):
+        """Return the design matrix as a tensor."""
+        return torch.tensor(self.design_matrix.values, dtype=torch.float32)
+
+    @property
+    def design_colnames(self) -> List[str]:
+        """Return the design matrix column names."""
+        return self.design_matrix.columns.tolist()

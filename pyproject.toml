@@ -6,7 +6,7 @@ authors = ["Santiago SILVA <16252054+sssilvar@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 pyro-ppl = "^1.8.5"
 pandas = "^2.0.2"
 seaborn = "^0.12.2"
@@ -19,6 +19,9 @@ pytest-cov = "^4.1.0"
 pytest-mpl = "^0.16.1"
 coverage-badge = "^1.1.0"
 jupyter = "^1.0.0"
+ruff = "^0.0.271"
+statsmodels = "^0.14.0"
+tabulate = "^0.9.0"
 
 [build-system]
 requires = ["poetry-core"]

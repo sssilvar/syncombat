@@ -1,4 +1,5 @@
 # SynComBat
+[![Build Status](https://app.travis-ci.com/sssilvar/syncombat.svg?branch=main)](https://app.travis-ci.com/sssilvar/syncombat)
 ![codecov](badges/coverage.svg)
 
 **SynComBat** is a Python package for generating biased synthetic data following the ComBat model. It provides a framework for generating synthetic datasets with built-in support for introducing biases, incorporating random effects, and applying data transformations.
