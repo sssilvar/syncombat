@@ -82,19 +82,19 @@ class CovariateGenerator:
     def generate_independent_covariates(self):
         """Generate covariates for n_samples and n_sites."""
         with pyro.plate('subject_j', self.n_samples) as subject_idx:
-            site = pyro.sample('site', dist.Categorical(self.site_p))
+            self.site = pyro.sample('site', dist.Categorical(self.site_p))
 
             # Sample age
-            age_mu = self.age_mu[site]  # Mean age at site
-            age_sigma = self.age_sigma[site]  # Std of age at site
+            age_mu = self.age_mu[self.site]  # Mean age at site
+            age_sigma = self.age_sigma[self.site]  # Std of age at site
             age = torch.clip(pyro.sample('age', dist.Normal(age_mu, age_sigma)), 0, 110)
 
             # Sample sex
-            site_sex_p = self.sex_p[site]  # Probability of Male/Female at site
+            site_sex_p = self.sex_p[self.site]  # Probability of Male/Female at site
             sex = pyro.sample('sex', dist.Categorical(site_sex_p))
 
             # Sample diagnosis
-            site_dx_p = self.dx_p[site]  # Probability of each diagnosis at site
+            site_dx_p = self.dx_p[self.site]  # Probability of each diagnosis at site
             dx = pyro.sample('DX', dist.Categorical(site_dx_p))
 
             # eTIV model
@@ -103,10 +103,7 @@ class CovariateGenerator:
             etiv_sigma = 5 + age * 0.001
             etiv = pyro.sample('eTIV', dist.Normal(etiv_loc, etiv_sigma))
 
-            # Create subject_id
-            subject_id = f'SUB_{subject_idx}_SITE_{site}'
-
-        return {'Age': age, 'Sex': sex, 'eTIV': etiv, 'Site': site, 'DX': dx, 'PTID': subject_id}
+        return {'Age': age, 'Sex': sex, 'eTIV': etiv, 'Site': self.site, 'DX': dx}
 
     @property
     def dataframe(self):

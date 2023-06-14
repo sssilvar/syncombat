@@ -17,6 +17,7 @@ Note:
 
 """
 import os
+from functools import cached_property
 
 import pandas as pd
 import torch
@@ -41,7 +42,7 @@ class PhenotypeModel:
         """
         # Save prams
         self.in_features = tensor_design_matrix.shape[1]
-        self.out_features = n_phenotypes
+        self.n_phenotypes = n_phenotypes
         self.random_state = random_state
         self.design_matrix = tensor_design_matrix
 
@@ -57,7 +58,7 @@ class PhenotypeModel:
         design_matrix_zero = torch.zeros_like(self.design_matrix)
 
         # Assert that the model's output is zero when the input is zero
-        assert torch.allclose(self.model(design_matrix_zero), torch.zeros(self.out_features))
+        assert torch.allclose(self.model(design_matrix_zero), torch.zeros(self.n_phenotypes))
 
     def generate_phenotypes(self) -> torch.Tensor:
         pass
@@ -83,12 +84,26 @@ class PhenotypeModel:
     @property
     def dataframe(self) -> pd.DataFrame:
         """Return a dataframe with the generated phenotypes."""
-        return pd.DataFrame(self.generate_phenotypes().numpy(), columns=self.pheno_names)
+        return pd.DataFrame(self.generate_phenotypes().numpy(), columns=self.phenotype_names)
+
+    @cached_property
+    def tensor(self) -> torch.Tensor:
+        """Return a tensor with the generated phenotypes."""
+        return self.generate_phenotypes()
+
+    @cached_property
+    def phi_x(self) -> torch.Tensor:
+        """Returns the evaluated model on the phenotypes $\phi(x)$.
+
+        Said otherwise, this is the tensor of the model's output.
+        Created only to facilitate notation. and nomenclature.
+        """
+        return self.tensor
 
     @property
-    def pheno_names(self) -> list:
+    def phenotype_names(self) -> list:
         """Return a list with the names of the generated phenotypes."""
-        return [f"Phenotype_{i}" for i in range(self.out_features)]
+        return [f"Phenotype_{i}" for i in range(self.n_phenotypes)]
 
 
 class LinearPhenotypeModel(PhenotypeModel):
@@ -104,11 +119,11 @@ class LinearPhenotypeModel(PhenotypeModel):
 
         #  Instantiate model
         # Bias is set to zero given that the intercept is already included in the design matrix
-        self.model = torch.nn.Linear(self.in_features, self.out_features, bias=False)
+        self.model = torch.nn.Linear(self.in_features, self.n_phenotypes, bias=False)
 
         # Generate phenotype
         self.generate_phenotypes()
 
-    def generate_phenotypes(self):
+    def generate_phenotypes(self) -> torch.Tensor:
         with torch.no_grad():
             return self.model(self.design_matrix)
